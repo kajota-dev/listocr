@@ -1,26 +1,90 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+/* =============================================
+   SISTEMA DE DISEÑO - LISTO.CR
+   Tailwind v4: configuración via @theme
+   ============================================= */
+@theme {
+  /* Paleta principal - Verde Esmeralda */
+  --color-emerald-brand:   #10b981;
+  --color-emerald-light:   #34d399;
+  --color-emerald-dark:    #059669;
+  --color-emerald-deeper:  #047857;
+  --color-emerald-muted:   #d1fae5;
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  /* Neutrales de marca */
+  --color-brand-white:     #ffffff;
+  --color-brand-surface:   #f9fafb;
+  --color-brand-border:    #e5e7eb;
+  --color-brand-muted:     #6b7280;
+  --color-brand-dark:      #111827;
+  --color-brand-darker:    #030712;
+
+  /* Tipografía */
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+
+  /* Sombras de marca */
+  --shadow-emerald:        0 0 40px 0 rgb(16 185 129 / 0.25);
+  --shadow-emerald-strong: 0 0 60px 0 rgb(16 185 129 / 0.4);
+  --shadow-card:           0 1px 3px 0 rgb(0 0 0 / 0.08), 0 1px 2px -1px rgb(0 0 0 / 0.04);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* Variables CSS nativas */
+:root {
+  --background: #ffffff;
+  --foreground: #111827;
 }
 
 body {
-  background: var(--background);
+  background-color: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* =============================================
+   ANIMACIONES BASE
+   ============================================= */
+@keyframes glow-pulse {
+  0%, 100% { box-shadow: 0 0 20px 0 rgb(16 185 129 / 0.3); }
+  50%       { box-shadow: 0 0 60px 0 rgb(16 185 129 / 0.6); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-12px); }
+}
+
+@keyframes fade-in-up {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* =============================================
+   UTILITIES PERSONALIZADAS
+   ============================================= */
+@layer utilities {
+  .animate-glow-pulse {
+    animation: glow-pulse 2.5s ease-in-out infinite;
+  }
+  .animate-float {
+    animation: float 4s ease-in-out infinite;
+  }
+  .animate-fade-in-up {
+    animation: fade-in-up 0.6s ease-out both;
+  }
+  .text-gradient-emerald {
+    background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .bg-emerald-glow {
+    background: radial-gradient(ellipse at center, rgb(16 185 129 / 0.12) 0%, transparent 70%);
+  }
+  .bg-emerald-glow-strong {
+    background: radial-gradient(ellipse at center, rgb(16 185 129 / 0.25) 0%, transparent 60%);
+  }
 }

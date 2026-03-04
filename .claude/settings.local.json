@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install framer-motion lucide-react mongoose qrcode.react bcryptjs)",
+      "Bash(npm install --save-dev @types/bcryptjs)",
+      "Bash(npm run build)"
+    ]
+  }
+}
