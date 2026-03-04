@@ -15,7 +15,7 @@ export default function WhatsAppButton({ slug, whatsappNumber, message }: WhatsA
     fetch(`/api/user/${slug}/click`, { method: "POST" }).catch(() => {});
 
     // Abrir WhatsApp
-    const url = `https://wa.me/${cleanNumber}?text=${encodeURIComponent(defaultMessage)}`;
+    const url = `https://wa.me/506${cleanNumber}?text=${encodeURIComponent(defaultMessage)}`;
     window.open(url, "_blank", "noopener,noreferrer");
   };
 
