@@ -27,6 +27,18 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Credenciales inválidas" }, { status: 401 });
     }
 
+    // Verificar aprobación del admin (super_admin siempre pasa)
+    if (!user.isAuthorized && user.role !== "super_admin") {
+      return NextResponse.json(
+        {
+          error: "Tu cuenta está pendiente de aprobación",
+          code: "PENDING_APPROVAL",
+          approvalStatus: user.approvalStatus,
+        },
+        { status: 403 }
+      );
+    }
+
     const token = await createToken({
       userId: String(user._id),
       role: user.role,

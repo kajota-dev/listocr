@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import {
   LayoutDashboard, Home, Users, QrCode, BarChart2,
   CreditCard, Settings, Building2, Activity, LogOut, Menu, X, User,
+  UserCheck, Receipt, History, AlertCircle,
 } from "lucide-react";
 import type { UserRole } from "@/types";
 
@@ -14,47 +15,61 @@ interface SidebarProps {
   userName: string;
   fichaSlug?: string;
   planName?: string;
+  pendingCount?: number;
 }
 
-function getSidebarItems(role: UserRole, fichaSlug?: string) {
+type NavItem = {
+  label: string;
+  href: string;
+  icon: React.ElementType;
+  external?: boolean;
+  badge?: number;
+};
+
+function getSidebarItems(role: UserRole, fichaSlug?: string, pendingCount?: number): NavItem[] {
   if (role === "super_admin") {
     return [
-      { label: "Dashboard",     href: "/dashboard/admin",   icon: LayoutDashboard },
-      { label: "Usuarios",      href: "/dashboard/admin/usuarios", icon: Users },
-      { label: "Agencias",      href: "/dashboard/admin/agencias", icon: Building2 },
-      { label: "Suscripciones", href: "/dashboard/admin/suscripciones", icon: CreditCard },
-      { label: "Métricas",      href: "/dashboard/admin/metricas", icon: Activity },
-      { label: "Configuración", href: "/dashboard/admin/config", icon: Settings },
+      { label: "Dashboard",     href: "/dashboard/admin",                        icon: LayoutDashboard },
+      { label: "Aprobaciones",  href: "/dashboard/admin/aprobaciones",            icon: UserCheck, badge: pendingCount },
+      { label: "Usuarios",      href: "/dashboard/admin/usuarios",                icon: Users },
+      { label: "Agencias",      href: "/dashboard/admin/agencias",                icon: Building2 },
+      { label: "Suscripciones", href: "/dashboard/admin/suscripciones/vencidos",  icon: AlertCircle },
+      { label: "Pagos",         href: "/dashboard/admin/pagos/verificacion",      icon: Receipt },
+      { label: "Membresías",    href: "/dashboard/admin/membresias/registro",     icon: CreditCard },
+      { label: "Métricas",      href: "/dashboard/admin/metricas",                icon: Activity },
+      { label: "Configuración", href: "/dashboard/admin/config",                  icon: Settings },
     ];
   }
 
   if (role === "lider_agencia") {
     return [
-      { label: "Dashboard",     href: "/dashboard/empresa",  icon: LayoutDashboard },
-      { label: "Propiedades",   href: "/dashboard/empresa/propiedades", icon: Home },
-      { label: "Mi Equipo",     href: "/dashboard/empresa/agentes", icon: Users },
-      { label: "Mi Ficha",      href: fichaSlug ? `/u/${fichaSlug}` : "#", icon: QrCode, external: true },
-      { label: "Analytics",     href: "/dashboard/empresa/analytics", icon: BarChart2 },
-      { label: "Facturación",   href: "/dashboard/empresa/facturacion", icon: CreditCard },
-      { label: "Configuración", href: "/dashboard/empresa/config", icon: Settings },
+      { label: "Dashboard",     href: "/dashboard/empresa",                       icon: LayoutDashboard },
+      { label: "Propiedades",   href: "/dashboard/empresa/propiedades",           icon: Home },
+      { label: "Mi Equipo",     href: "/dashboard/empresa/agentes",               icon: Users },
+      { label: "Auditoría",     href: "/dashboard/empresa/auditoria",             icon: History },
+      { label: "Mi Ficha",      href: fichaSlug ? `/u/${fichaSlug}` : "#",        icon: QrCode, external: true },
+      { label: "Analytics",     href: "/dashboard/empresa/analytics",             icon: BarChart2 },
+      { label: "Facturación",   href: "/dashboard/facturacion/comprobante",       icon: Receipt },
+      { label: "Configuración", href: "/dashboard/empresa/config",                icon: Settings },
     ];
   }
 
   return [
-    { label: "Dashboard",    href: "/dashboard/agente",  icon: LayoutDashboard },
-    { label: "Propiedades",  href: "/dashboard/agente/propiedades", icon: Home },
-    { label: "Mi Ficha",     href: fichaSlug ? `/u/${fichaSlug}` : "#", icon: QrCode, external: true },
-    { label: "Analytics",    href: "/dashboard/agente/analytics", icon: BarChart2 },
-    { label: "Mi Cuenta",    href: "/dashboard/agente/cuenta", icon: User },
+    { label: "Dashboard",    href: "/dashboard/agente",                           icon: LayoutDashboard },
+    { label: "Propiedades",  href: "/dashboard/agente/propiedades",               icon: Home },
+    { label: "Mi Ficha",     href: fichaSlug ? `/u/${fichaSlug}` : "#",           icon: QrCode, external: true },
+    { label: "Analytics",    href: "/dashboard/agente/analytics",                 icon: BarChart2 },
+    { label: "Facturación",  href: "/dashboard/facturacion/comprobante",          icon: Receipt },
+    { label: "Mi Cuenta",    href: "/dashboard/agente/cuenta",                    icon: User },
   ];
 }
 
 const PLAN_LABELS = { free: "Gratis", pro: "Pro", business: "Business" };
 
-export default function Sidebar({ role, userName, fichaSlug, planName = "free" }: SidebarProps) {
+export default function Sidebar({ role, userName, fichaSlug, planName = "free", pendingCount = 0 }: SidebarProps) {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
-  const items = getSidebarItems(role, fichaSlug);
+  const items = getSidebarItems(role, fichaSlug, pendingCount);
 
   const handleLogout = async () => {
     await fetch("/api/auth/logout", { method: "POST" });
@@ -88,7 +103,7 @@ export default function Sidebar({ role, userName, fichaSlug, planName = "free" }
 
       {/* Items de navegación */}
       <nav className="flex-1 space-y-1">
-        {items.map(({ label, href, icon: Icon, external }) => {
+        {items.map(({ label, href, icon: Icon, external, badge }) => {
           const isActive = pathname === href || pathname.startsWith(href + "/");
           return external ? (
             <a
@@ -115,6 +130,11 @@ export default function Sidebar({ role, userName, fichaSlug, planName = "free" }
             >
               <Icon className={`h-5 w-5 ${isActive ? "text-emerald-brand" : ""}`} />
               {label}
+              {badge != null && badge > 0 && (
+                <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-amber-500 px-1.5 text-xs font-bold text-white">
+                  {badge > 99 ? "99+" : badge}
+                </span>
+              )}
             </Link>
           );
         })}

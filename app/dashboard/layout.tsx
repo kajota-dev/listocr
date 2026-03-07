@@ -4,7 +4,7 @@ import Sidebar from "@/components/dashboard/shared/Sidebar";
 import { verifyToken } from "@/lib/auth";
 import { connectDB } from "@/lib/mongodb";
 import { User } from "@/lib/models/User";
-import { Subscription } from "@/lib/models/Subscription";
+import { PaymentReceipt } from "@/lib/models/PaymentReceipt";
 import type { SubscriptionPlan } from "@/types";
 
 export default async function DashboardLayout({
@@ -16,12 +16,12 @@ export default async function DashboardLayout({
   const token = cookieStore.get("listo-auth-token")?.value;
 
   if (!token) {
-    redirect("/registro");
+    redirect("/login");
   }
 
   const payload = await verifyToken(token);
   if (!payload) {
-    redirect("/registro");
+    redirect("/login");
   }
 
   await connectDB();
@@ -31,10 +31,38 @@ export default async function DashboardLayout({
     .lean();
 
   if (!user || !user.isActive) {
-    redirect("/registro");
+    redirect("/login");
+  }
+
+  // Verificar aprobación (super_admin siempre pasa)
+  if (!user.isAuthorized && user.role !== "super_admin") {
+    redirect("/registro/espera");
+  }
+
+  // Verificar suscripción activa (solo para cuentas que no sean super_admin)
+  if (user.role !== "super_admin") {
+    const sub = user.subscriptionId as { status?: string; endDate?: Date } | null;
+    const isExpired =
+      sub &&
+      sub.status !== "active" &&
+      sub.endDate &&
+      new Date(sub.endDate) < new Date();
+    if (isExpired) {
+      redirect("/dashboard/cuenta/bloqueada");
+    }
   }
 
   const plan = ((user.subscriptionId as { plan?: SubscriptionPlan } | null)?.plan ?? "free") as string;
+
+  // Para super_admin: contar solicitudes pendientes de aprobación + comprobantes
+  let pendingCount = 0;
+  if (user.role === "super_admin") {
+    const [pendingUsers, pendingReceipts] = await Promise.all([
+      User.countDocuments({ approvalStatus: "pending" }),
+      PaymentReceipt.countDocuments({ status: "pending" }),
+    ]);
+    pendingCount = pendingUsers + pendingReceipts;
+  }
 
   return (
     <div className="flex min-h-screen flex-col bg-brand-surface lg:flex-row">
@@ -43,6 +71,7 @@ export default async function DashboardLayout({
         userName={user.name}
         fichaSlug={user.fichaDigitalSlug}
         planName={plan}
+        pendingCount={pendingCount}
       />
       <main className="flex-1 p-4 lg:p-8 overflow-auto">
         {children}

@@ -102,6 +102,19 @@ const UserSchema = new Schema<UserDocument>(
       type: Boolean,
       default: true,
     },
+    isAuthorized: {
+      type: Boolean,
+      default: false,
+    },
+    approvalStatus: {
+      type: String,
+      enum: ["pending", "approved", "rejected"],
+      default: "pending",
+    },
+    suspendedAt: {
+      type: Date,
+      default: null,
+    },
   },
   {
     timestamps: true,
