@@ -16,7 +16,6 @@ export default function StepSuccess({ userName, fichaSlug, userType }: StepSucce
   const [copied, setCopied] = useState(false);
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://listo.cr";
   const fichaUrl = `${appUrl}/u/${fichaSlug}`;
-  const dashboardPath = userType === "agencia" ? "/dashboard/empresa" : "/dashboard/agente";
 
   const handleCopy = async () => {
     await navigator.clipboard.writeText(fichaUrl);
@@ -116,10 +115,10 @@ export default function StepSuccess({ userName, fichaSlug, userType }: StepSucce
         className="flex w-full flex-col gap-3"
       >
         <Link
-          href={dashboardPath}
+          href="/registro/espera"
           className="flex w-full items-center justify-center gap-2 rounded-2xl bg-emerald-brand px-6 py-4 font-semibold text-white shadow-emerald transition-all hover:bg-emerald-dark"
         >
-          Completar mi Perfil
+          Ver estado de mi solicitud
           <ArrowRight className="h-5 w-5" />
         </Link>
 

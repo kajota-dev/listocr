@@ -29,6 +29,8 @@ export type PropertyStatus =
 
 export type PropertyOperation = "venta" | "alquiler" | "ambos";
 
+export type ApprovalStatus = "pending" | "approved" | "rejected";
+
 export type CostaRicaProvince =
   | "San Jose"
   | "Alajuela"
@@ -80,6 +82,9 @@ export interface IUser {
   publicProfile: IPublicProfile;
   leadScore?: LeadScore;
   isActive: boolean;
+  isAuthorized: boolean;
+  approvalStatus: ApprovalStatus;
+  suspendedAt?: Date;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -216,6 +221,54 @@ export interface SidebarItem {
   icon: React.ReactNode;
   badge?: number;
   active?: boolean;
+}
+
+// --- Activity Log ---
+
+export type ActivityEntityType =
+  | "property"
+  | "profile"
+  | "subscription"
+  | "user"
+  | "agency";
+
+export type ActivityAction =
+  | "created"
+  | "updated"
+  | "deleted"
+  | "status_changed"
+  | "price_changed";
+
+export interface IActivityLog {
+  _id: string;
+  userId: string;
+  agencyId?: string;
+  entityType: ActivityEntityType;
+  entityId: string;
+  action: ActivityAction;
+  changes?: Array<{ field: string; oldValue: unknown; newValue: unknown }>;
+  metadata?: Record<string, unknown>;
+  createdAt: Date;
+}
+
+// --- Payment Receipt ---
+
+export type ReceiptStatus = "pending" | "approved" | "rejected";
+
+export interface IPaymentReceipt {
+  _id: string;
+  userId: string;
+  subscriptionId?: string;
+  imageUrl: string;
+  amount: number;
+  currency: "USD" | "CRC";
+  transferRef?: string;
+  notes?: string;
+  status: ReceiptStatus;
+  reviewedBy?: string;
+  reviewedAt?: Date;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 // --- Respuestas de API ---

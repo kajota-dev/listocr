@@ -28,6 +28,12 @@ export default function LoginPage() {
       const data = await res.json();
 
       if (!res.ok) {
+        // Cuenta pendiente de aprobación → redirigir a pantalla de espera
+        if (data.code === "PENDING_APPROVAL") {
+          const status = data.approvalStatus ?? "pending";
+          router.push(`/registro/espera?status=${status}`);
+          return;
+        }
         setError(data.error ?? "Error al iniciar sesión");
         return;
       }

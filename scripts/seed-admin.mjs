@@ -68,6 +68,9 @@ await User.create({
   role: "super_admin",
   fichaDigitalSlug: ADMIN_SLUG,
   isActive: true,
+  isAuthorized: true,
+  approvalStatus: "approved",
+  suspendedAt: null,
   publicProfile: {
     displayName: ADMIN_NAME,
     bio: "",
